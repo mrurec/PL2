@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>PL2</title>
+    <style>
+        ul {
+            font-size: 32px;
+            color: white;
+            font-family: Verdana;
+            background-color: brown;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="text"/>
+    <button onclick="createFolder()">New Folder</button>
+    <button onclick="deleteFolder()">Delete Folder</button>
+
+    <ul name="list"></ul>
+
+    <script>
+        function ls(event) {
+            var l = document.getElementsByTagName('li');
+            var len = l.length;
+
+            for (let i = 0; i<len; i++ )
+                l[len-1-i].remove();
+
+            var path = '';
+
+            if(event)
+                path = event.currentTarget.innerText;
+
+            var input = document.getElementsByTagName('input')[0];
+
+            var fullPath = path;
+            if(input.getAttribute('name'))
+                fullPath = input.getAttribute('name') + '\\' + path;
+
+            var req = new XMLHttpRequest();
+            req.open('GET', '\\root' + '\\' + fullPath, false);
+            req.send();
+
+
+            var reqAnswer = JSON.parse(req.responseText);
+            var elemList = document.getElementsByName('list')[0];
+            for(let i = 0; i < reqAnswer.length; i++) {
+                var elem = document.createElement('li');
+                elem.innerText = reqAnswer[i]['name'];
+                elemList.appendChild(elem);
+                elem.onclick = ls;
+            }
+
+            input.setAttribute('name', fullPath);
+        }
+        ls();
+
+        function createFolder() {
+            var input = document.getElementsByTagName('input')[0];
+            var fullPath = input.getAttribute('name');
+            if (!fullPath)
+                fullPath = '';
+            else
+                fullPath = '\\' + fullPath;
+            var req = new XMLHttpRequest();
+            req.open('GET', '\\root' + fullPath + '?folder=1&name=' + input.value, false);
+            req.send();
+            ls();
+        }
+
+        function deleteFolder() {
+            var input = document.getElementsByTagName('input')[0];
+            var fullPath = input.getAttribute('name');
+            if (!fullPath)
+                fullPath = '';
+            else
+                fullPath = '\\' + fullPath;
+            var req = new XMLHttpRequest();
+            req.open('GET', '\\root' + fullPath + '?folder=2&name=' + input.value, false);
+            req.send();
+
+            if (req.status != 200)
+                alert( req.status + ': ' + req.statusText + 'Folder is not empty' );
+
+            ls();
+        }
+    </script>
+</body>
+</html>
